@@ -14,15 +14,29 @@ const browserParams: LaunchOptions = {
   devtools: true,
   args: [`--window-size=1578,891`, `--window-position=460,222`],
 };
+const routes: RouteParams[] = [];
+let counter = 1;
 
 (async () => {
   const browser = await puppeteer.launch(browserParams);
-  const page = await browser.newPage();
-  // await page.goto("https://yandex.ru/maps/?ll=37.578087%2C55.723876&z=9");
-  await page.goto(getQueryParams([56.024122, 36.587356]));
-  await changeRouteDirection(page);
-  await changeRouteDirection(page);
-  page.on("response", response => handleResponse(response, browser));
+  const departureCoordinates = await getDepartureCoordinates();
+  console.log(`Departure points count: ${departureCoordinates.length}`);
+  for (const coordinates of departureCoordinates) {
+    console.log(`[${counter}] Start new route from [${coordinates}]`);
+    await new Promise(async resolve => {
+      const page = await browser.newPage();
+      await page.goto(getQueryParams(coordinates));
+      await changeRouteDirection(page);
+      await changeRouteDirection(page);
+      page.on("response", response => handleResponse(response, page));
+      counter++;
+      page.on("close", () => resolve());
+    });
+  }
+  await promises.writeFile(path.join(__dirname, filePaths.routesCommon), JSON.stringify(routes, undefined, 4));
+  console.log(`\nCommon routes list saved to ${filePaths.routesCommon}`);
+  await browser.close();
+  process.exit(0);
 })();
 
 function getQueryParams([departureLon, departureLat]: [number, number]): string {
@@ -48,7 +62,7 @@ function getQueryParams([departureLon, departureLat]: [number, number]): string 
   );
 }
 
-async function handleResponse(response: Response, browser: puppeteer.Browser): Promise<RouteParams | false> {
+async function handleResponse(response: Response, page: puppeteer.Page): Promise<RouteParams | false> {
   const req = response.request();
   if (!req.url().includes("buildRoute?")) {
     return false;
@@ -59,11 +73,22 @@ async function handleResponse(response: Response, browser: puppeteer.Browser): P
     delete route.encodedCoordinates;
     delete route.paths;
     delete route.bounds;
-    console.log(JSON.stringify(route, undefined, 4));
+    console.log(
+      JSON.stringify(
+        {
+          distance: route.distance.text,
+          duration: route.duration,
+          durationInTraffic: route.durationInTraffic,
+          difference: route.duration - route.durationInTraffic,
+        },
+        undefined,
+        4,
+      ),
+    );
+    routes.push(route as RouteParams);
     await saveRoutes(route as RouteParams);
     console.log(`Route saved to ${filePaths.routesPartials}`);
-    await browser.close();
-    process.exit(0);
+    await page.close();
   } catch (e) {
     console.error("Cant parse response\n", e);
     process.exit(1);
@@ -76,6 +101,12 @@ async function changeRouteDirection(page: Page): Promise<void> {
 
 async function saveRoutes(route: RouteParams) {
   await promises.appendFile(path.join(__dirname, filePaths.routesPartials), JSON.stringify(route, undefined, 4));
+}
+
+async function getDepartureCoordinates(): Promise<[number, number][]> {
+  return JSON.parse(
+    (await promises.readFile(path.join(__dirname, filePaths.departureCoordinates))).toString("utf8"),
+  ) as [number, number][];
 }
 
 export type RouteParams = any;
