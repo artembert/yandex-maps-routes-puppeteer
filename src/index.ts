@@ -21,14 +21,14 @@ let counter = 1;
   const browser = await puppeteer.launch(browserParams);
   const departureCoordinates = await getDepartureCoordinates();
   console.log(`Departure points count: ${departureCoordinates.length}`);
-  for (const coordinates of departureCoordinates) {
-    console.log(`[${counter}] Start new route from [${coordinates}]`);
+  for (const [id, coordinates] of departureCoordinates) {
+    console.log(`[${counter}] Start new route id [${id}] from [${coordinates}]`);
     await new Promise(async resolve => {
       const page = await browser.newPage();
       await page.goto(getQueryParams(coordinates));
       await changeRouteDirection(page);
       await changeRouteDirection(page);
-      page.on("response", response => handleResponse(response, page));
+      page.on("response", response => handleResponse(response, id, page));
       counter++;
       page.on("close", () => resolve());
     });
@@ -39,7 +39,7 @@ let counter = 1;
   process.exit(0);
 })();
 
-function getQueryParams([departureLon, departureLat]: [number, number]): string {
+function getQueryParams([departureLat, departureLon]: [number, number]): string {
   return (
     "https://yandex.ru/maps/?ll=" +
     moscowCenterLat +
@@ -62,14 +62,14 @@ function getQueryParams([departureLon, departureLat]: [number, number]): string 
   );
 }
 
-async function handleResponse(response: Response, page: puppeteer.Page): Promise<RouteParams | false> {
+async function handleResponse(response: Response, id: number, page: puppeteer.Page): Promise<RouteParams | false> {
   const req = response.request();
   if (!req.url().includes("buildRoute?")) {
     return false;
   }
   try {
     const body = (await response.json()) as any;
-    const route = { ...body.data.routes[0] };
+    const route = { ...body.data.routes[0], gridCellId: id };
     delete route.encodedCoordinates;
     delete route.paths;
     delete route.bounds;
@@ -103,10 +103,11 @@ async function saveRoutes(route: RouteParams) {
   await promises.appendFile(path.join(__dirname, filePaths.routesPartials), JSON.stringify(route, undefined, 4));
 }
 
-async function getDepartureCoordinates(): Promise<[number, number][]> {
+async function getDepartureCoordinates(): Promise<DepartureItem[]> {
   return JSON.parse(
     (await promises.readFile(path.join(__dirname, filePaths.departureCoordinates))).toString("utf8"),
-  ) as [number, number][];
+  ) as DepartureItem[];
 }
 
 export type RouteParams = any;
+export type DepartureItem = [number, [number, number]];
