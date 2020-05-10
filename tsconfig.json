@@ -1,0 +1,21 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "declaration": false,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "lib": ["es2017", "ES2020", "dom"],
+    "moduleResolution": "node",
+    "paths": {
+      "@zenith/vcp": ["projects/lib/lib.module.ts"],
+      "@zenith/vcp/*": ["projects/lib/*"]
+    },
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    "target": "es6",
+    "typeRoots": ["node_modules/@types"]
+  },
+  "exclude": ["./projects/lib/dist"]
+}

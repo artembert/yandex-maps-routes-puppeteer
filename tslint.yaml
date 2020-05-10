@@ -1,0 +1,333 @@
+linterOptions:
+  exclude:
+    - "**/node_modules/**"
+  format: stylish
+rules:
+  # TSLint core rules
+  adjacent-overload-signatures: true
+  align: false # Covered by Prettier (not always aligned)
+  arrow-parens:
+    options:
+      - ban-single-arg-parens # Aligned with Prettier's `arrowParens: "avoid"` https://prettier.io/docs/en/options.html#arrow-function-parentheses
+  array-type:
+    options:
+      - array
+  arrow-return-shorthand: true
+  await-promise: true
+  ban: false
+  ban-comma-operator: true
+  ban-types:
+    options:
+      - - Object
+        - Avoid using the `Object` type. Did you mean `object`?
+      - - Function
+        - Avoid using the `Function` type. Prefer a specific function type, like `() => void`.
+      - - Boolean
+        - Avoid using the `Boolean` type. Did you mean `boolean`?
+      - - Number
+        - Avoid using the `Number` type. Did you mean `number`?
+      - - String
+        - Avoid using the `String` type. Did you mean `string`?
+      - - Symbol
+        - Avoid using the `Symbol` type. Did you mean `symbol`?
+  binary-expression-operand-order: true
+  callable-types: true
+  class-name: true
+  comment-format:
+    options:
+      - check-space
+  completed-docs: false
+  curly: true
+  cyclomatic-complexity: true
+  deprecation:
+    severity: warning
+  encoding: true
+  eofline: true
+  file-header: false
+  file-name-casing:
+    options:
+      - kebab-case
+  forin: true
+  import-blacklist: false
+  import-spacing: true
+  indent:
+    options:
+      - spaces
+      - 4
+  interface-name:
+    options:
+      - never-prefix
+  interface-over-type-literal: true
+  jsdoc-format:
+    options:
+      - check-multiline-start
+  label-position: true
+  linebreak-style: false
+  match-default-export-name: true
+  max-classes-per-file:
+    options:
+      - 1
+  max-file-line-count:
+    options:
+      - 400 # "Consider limiting files to 400 lines of code" https://angular.io/guide/styleguide#style-01-01
+    severity: warning
+  max-line-length:
+    options:
+      limit: 120
+      ignore-pattern: "^import |^export "
+  member-access:
+    options:
+      - check-accessor
+      - check-parameter-property
+  member-ordering: false # places getters before input, needs to reconsider
+  # options:
+  #   order: instance-sandwich # https://github.com/palantir/tslint/blob/95d9d958833fd9dc0002d18cbe34db20d0fbf437/src/rules/memberOrderingRule.ts#L66
+  # severity: warning
+  new-parens: true
+  newline-before-return: false
+  newline-per-chained-call: false
+  no-angle-bracket-type-assertion: true
+  no-any: true
+  no-arg: true
+  no-bitwise: true
+  no-boolean-literal-compare: true
+  no-conditional-assignment: true
+  no-consecutive-blank-lines: true
+  no-console: false
+  no-construct: true
+  no-debugger: true
+  no-default-export: true
+  no-duplicate-imports: true
+  no-duplicate-super: true
+  no-duplicate-switch-case: true
+  no-duplicate-variable:
+    options:
+      - check-parameters
+  no-dynamic-delete: true
+  no-empty: true
+  no-empty-interface: true
+  no-eval: true
+  no-floating-promises: true
+  no-for-in-array: true
+  no-implicit-dependencies: true
+  no-import-side-effect: true
+  no-inferrable-types:
+    options:
+      - ignore-params
+      - ignore-properties
+    severity: warning
+  no-inferred-empty-object-type: true
+  no-internal-module: true
+  no-invalid-template-strings: true
+  no-invalid-this: true
+  no-irregular-whitespace: true
+  no-magic-numbers: false
+  no-mergeable-namespace: true
+  no-misused-new: true
+  no-namespace: true
+  no-non-null-assertion: true
+  no-object-literal-type-assertion: true
+  no-parameter-properties: false
+  no-parameter-reassignment: true
+  no-redundant-jsdoc: true
+  no-reference: true
+  no-reference-import: true
+  no-require-imports: true
+  no-return-await: true
+  no-shadowed-variable: true
+  no-sparse-arrays: true
+  no-string-literal: true
+  no-string-throw: true
+  no-submodule-imports: false
+  no-switch-case-fall-through: true
+  no-this-assignment: true
+  no-trailing-whitespace: true
+  no-unbound-method: true
+  no-unnecessary-callback-wrapper: true
+  no-unnecessary-class: true
+  no-unnecessary-initializer: true
+  no-unnecessary-qualifier: true
+  no-unnecessary-type-assertion: true
+  no-unsafe-any: true
+  no-unsafe-finally: true
+  no-unused-expression:
+    options:
+      - allow-fast-null-checks
+  no-unused-variable: false # deprecated since TypeScript 2.9. Built-in compiler check noUnusedLocals is used instead.
+  no-use-before-declare: true
+  no-var-keyword: true
+  no-var-requires: true
+  no-void-expression:
+    options:
+      - ignore-arrow-function-shorthand
+  number-literal-format: true
+  object-literal-key-quotes:
+    options:
+      - as-needed
+  object-literal-shorthand: true
+  object-literal-sort-keys: false
+  #  options:
+  #    - match-declaration-order
+  one-line:
+    options:
+      - check-catch
+      - check-else
+      - check-finally
+      - check-open-brace
+      - check-whitespace
+  one-variable-per-declaration: true
+  only-arrow-functions:
+    options:
+      - allow-declarations
+  ordered-imports: true
+  prefer-conditional-expression:
+    options:
+      - check-else-if
+  prefer-const: true
+  prefer-for-of: true
+  prefer-function-over-method:
+    options:
+      - allow-public # Angular component members used in templates
+  prefer-method-signature: true
+  prefer-object-spread: true
+  prefer-readonly: true
+  prefer-switch: true
+  prefer-template: true
+  prefer-while: true
+  promise-function-async: false # throws an error in some cases, review later
+  quotemark:
+    options:
+      - double
+  radix: true
+  restrict-plus-operands: true
+  return-undefined: true
+  semicolon:
+    options:
+      - always # https://prettier.io/docs/en/options.html#semicolons
+  space-before-function-paren:
+    options:
+      anonymous: never
+      asyncArrow: always # aligned with Prettier
+      constructor: never
+      method: never
+      named: never
+  space-within-parens: true
+  strict-boolean-expressions: false
+  strict-type-predicates: false # does not work without --strictNullChecks
+  switch-default: false
+  switch-final-break: false
+  trailing-comma:
+    options:
+      multiline: always # https://prettier.io/docs/en/options.html#trailing-commas
+      singleline: never
+  triple-equals:
+    options:
+      - allow-undefined-check
+  type-literal-delimiter: true
+  typedef:
+    options:
+      - call-signature
+      - member-variable-declaration
+      - parameter
+      - property-declaration
+  typedef-whitespace: true
+  typeof-compare: false # deprecated since TypeScript 2.2
+  unified-signatures: true
+  use-default-type-parameter: true
+  use-isnan: true
+  variable-name:
+    options:
+      - ban-keywords
+      - check-format
+  whitespace: true
+
+  # codelyzer rules
+  angular-whitespace: false # deprecated, see https://github.com/mgechev/codelyzer#rules-status
+  component-class-suffix: true
+  component-max-inline-declarations: true
+  component-selector: true
+  contextual-decorator: true
+  contextual-lifecycle: true
+  directive-class-suffix: true
+  directive-selector: true
+  import-destructuring-spacing: true
+  no-attribute-decorator: true
+  no-conflicting-lifecycle: true
+  no-forward-ref: true
+  no-host-metadata-property: true
+  no-input-prefix:
+    options:
+      - can
+      - is
+  no-input-rename: true
+  no-inputs-metadata-property: true
+  no-lifecycle-call: true
+  no-output-native: true
+  no-output-on-prefix: true
+  no-output-rename: true
+  no-outputs-metadata-property: true
+  no-pipe-impure: true
+  no-queries-metadata-property: true
+  no-unused-css: true
+  pipe-naming: false # deprecated, see https://github.com/mgechev/codelyzer#rules-status
+  pipe-prefix: false
+  prefer-inline-decorator: true
+  prefer-on-push-component-change-detection: false
+  prefer-output-readonly: true
+  relative-url-prefix: true
+  template-accessibility-alt-text: true
+  template-accessibility-elements-content: true
+  template-accessibility-label-for: true
+  template-accessibility-tabindex-no-positive: true
+  template-accessibility-table-scope: true
+  template-accessibility-valid-aria: true
+  template-banana-in-box: true
+  template-click-events-have-key-events: true
+  template-mouse-events-have-key-events: true
+  template-conditional-complexity: true
+  template-cyclomatic-complexity: true
+  template-i18n: false
+  template-no-any: true
+  template-no-autofocus: true
+  template-no-call-expression: true
+  template-no-distracting-elements: true
+  template-no-negated-async: true
+  template-use-track-by-function: true
+  use-component-selector: true
+  use-lifecycle-interface: true
+  use-pipe-decorator: true
+  use-pipe-transform-interface: true
+  use-component-view-encapsulation: true
+
+  # rxjs-tslint-rules rules
+  rxjs-finnish:
+    options:
+      - functions: true
+        methods: true
+        parameters: true
+        properties: true
+        variables: true
+        types:
+          "^EventEmitter$": false
+  rxjs-no-create: true
+  rxjs-no-exposed-subjects: true
+  rxjs-no-ignored-error: true # questionable
+  rxjs-no-ignored-notifier: true
+  rxjs-no-ignored-replay-buffer: true
+  rxjs-no-ignored-subscribe: true
+  rxjs-no-internal: true
+  rxjs-no-nested-subscribe: true
+  rxjs-no-subject-unsubscribe: true
+  rxjs-no-subject-value: true
+  rxjs-no-unbound-methods: true
+  rxjs-no-unsafe-catch: true
+  rxjs-no-unsafe-first: true
+  rxjs-no-unsafe-scope:
+    options:
+      - allowDo: true
+        allowMethods: true
+        allowParameters: true
+        allowProperties: true
+        allowTap: true
+  rxjs-no-unsafe-switchmap: true
+  rxjs-no-unsafe-takeuntil: true

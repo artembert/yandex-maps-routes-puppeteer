@@ -1,0 +1,14 @@
+printWidth: 120
+tabWidth: 2
+trailingComma: all
+overrides:
+  - files:
+      - "*.json"
+      - ".*.json"
+      - "*.md"
+      - ".*.md"
+      - "*.yaml"
+      - ".*.yaml"
+    options:
+      tabWidth: 2
+arrowParens: avoid
