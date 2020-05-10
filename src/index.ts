@@ -18,8 +18,8 @@ const browserParams: LaunchOptions = {
   await page.goto("https://yandex.ru/maps/?ll=37.578087%2C55.723876&z=9");
   await page.goto(getQueryParams([56.024122, 36.587356]));
   await changeRouteDirection(page);
-  page.on("response", handleResponse);
   await changeRouteDirection(page);
+  page.on("response", handleResponse);
 })();
 
 function getQueryParams([departureLon, departureLat]: [number, number]): string {
