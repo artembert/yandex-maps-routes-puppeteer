@@ -1,5 +1,8 @@
 import * as puppeteer from "puppeteer";
 import { LaunchOptions, Page, Response } from "puppeteer";
+import { promises } from "fs";
+import * as path from "path";
+import { filePaths } from "./file-paths";
 
 const [moscowCenterLon, moscowCenterLat] = [55.748914, 37.612586];
 const browserParams: LaunchOptions = {
@@ -15,11 +18,11 @@ const browserParams: LaunchOptions = {
 (async () => {
   const browser = await puppeteer.launch(browserParams);
   const page = await browser.newPage();
-  await page.goto("https://yandex.ru/maps/?ll=37.578087%2C55.723876&z=9");
+  // await page.goto("https://yandex.ru/maps/?ll=37.578087%2C55.723876&z=9");
   await page.goto(getQueryParams([56.024122, 36.587356]));
   await changeRouteDirection(page);
   await changeRouteDirection(page);
-  page.on("response", handleResponse);
+  page.on("response", response => handleResponse(response, browser));
 })();
 
 function getQueryParams([departureLon, departureLat]: [number, number]): string {
@@ -45,7 +48,7 @@ function getQueryParams([departureLon, departureLat]: [number, number]): string 
   );
 }
 
-async function handleResponse(response: Response): Promise<RouteParams | false> {
+async function handleResponse(response: Response, browser: puppeteer.Browser): Promise<RouteParams | false> {
   const req = response.request();
   if (!req.url().includes("buildRoute?")) {
     return false;
@@ -57,14 +60,22 @@ async function handleResponse(response: Response): Promise<RouteParams | false> 
     delete route.paths;
     delete route.bounds;
     console.log(JSON.stringify(route, undefined, 4));
-    return route as RouteParams;
+    await saveRoutes(route as RouteParams);
+    console.log(`Route saved to ${filePaths.routesPartials}`);
+    await browser.close();
+    process.exit(0);
   } catch (e) {
     console.error("Cant parse response\n", e);
+    process.exit(1);
   }
 }
 
 async function changeRouteDirection(page: Page): Promise<void> {
   await page.click(".route-form-view__reverse-icon");
+}
+
+async function saveRoutes(route: RouteParams) {
+  await promises.appendFile(path.join(__dirname, filePaths.routesPartials), JSON.stringify(route, undefined, 4));
 }
 
 export type RouteParams = any;
