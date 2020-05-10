@@ -8,11 +8,11 @@ const [moscowCenterLon, moscowCenterLat] = [55.748914, 37.612586];
 const browserParams: LaunchOptions = {
   headless: false,
   defaultViewport: {
-    width: 1024,
+    width: 1229,
     height: 768,
   },
-  devtools: true,
-  args: [`--window-size=1578,891`, `--window-position=460,222`],
+  devtools: false,
+  args: [`--window-size=1229,891`, `--window-position=281,182`],
 };
 const routes: RouteParams[] = [];
 let counter = 1;
@@ -90,8 +90,7 @@ async function handleResponse(response: Response, id: number, page: puppeteer.Pa
     console.log(`Route saved to ${filePaths.routesPartials}`);
     await page.close();
   } catch (e) {
-    console.error("Cant parse response\n", e);
-    process.exit(1);
+    console.error("Can`t parse response\n", e);
   }
 }
 
