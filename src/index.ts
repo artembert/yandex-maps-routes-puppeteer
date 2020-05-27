@@ -22,13 +22,13 @@ let counter = 1;
   const departureCoordinates = await getDepartureCoordinates();
   console.log(`Departure points count: ${departureCoordinates.length}`);
   for (const [id, coordinates] of departureCoordinates) {
-    console.log(`[${counter}] Start new route id [${id}] from [${coordinates}]`);
+    console.log(`[${counter}] Start new route #${id} from [${coordinates}]`);
     await new Promise(async resolve => {
       const page = await browser.newPage();
       await page.goto(getQueryParams(coordinates));
       await changeRouteDirection(page);
       await changeRouteDirection(page);
-      page.on("response", response => handleResponse(response, id, page));
+      page.on("response", response => handleResponse(response, id, page, counter));
       counter++;
       page.on("close", () => resolve());
     });
@@ -62,7 +62,12 @@ function getQueryParams([departureLat, departureLon]: [number, number]): string 
   );
 }
 
-async function handleResponse(response: Response, id: number, page: puppeteer.Page): Promise<RouteParams | false> {
+async function handleResponse(
+  response: Response,
+  id: number,
+  page: puppeteer.Page,
+  index: number,
+): Promise<RouteParams | false> {
   const req = response.request();
   if (!req.url().includes("buildRoute?")) {
     return false;
@@ -87,10 +92,10 @@ async function handleResponse(response: Response, id: number, page: puppeteer.Pa
     );
     routes.push(route as RouteParams);
     await saveRoutes(route as RouteParams);
-    console.log(`Route saved to ${filePaths.routesPartials}`);
+    console.log(`${index} Route #${id} saved to ${filePaths.routesPartials}`);
     await page.close();
   } catch (e) {
-    console.error("Can`t parse response\n", e);
+    console.error(`[${index}] Can\`t parse response from route #${id}\n`, e, `\n`);
   }
 }
 
