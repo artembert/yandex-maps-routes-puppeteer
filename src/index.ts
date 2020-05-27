@@ -85,6 +85,7 @@ async function handleResponse(
           duration: route.duration,
           durationInTraffic: route.durationInTraffic,
           difference: route.duration - route.durationInTraffic,
+          id,
         },
         undefined,
         4,
@@ -113,5 +114,5 @@ async function getDepartureCoordinates(): Promise<DepartureItem[]> {
   ) as DepartureItem[];
 }
 
-export type RouteParams = any;
+export type RouteParams = { [key: string]: any; id: number };
 export type DepartureItem = [number, [number, number]];
