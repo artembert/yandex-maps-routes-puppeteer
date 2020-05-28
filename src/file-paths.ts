@@ -23,5 +23,6 @@ export function formatDate(date: Date): string {
 export const filePaths = {
   routesPartials: `../data/routes/routes-partials-${startTime}.json`,
   routesCommon: `../data/routes/routes-common-${startTime}.json`,
+  failedIDs: `../data/failed-ids/failed-ids-${startTime}.txt`,
   departureCoordinates: "../data/departure-coordinates.json",
 };

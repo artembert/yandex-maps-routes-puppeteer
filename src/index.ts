@@ -3,6 +3,7 @@ import { LaunchOptions, Page, Response } from "puppeteer";
 import { promises } from "fs";
 import * as path from "path";
 import { filePaths } from "./file-paths";
+import { RawRoute, Route, RouteWithID } from "./interfaces/route";
 
 const [moscowCenterLon, moscowCenterLat] = [55.748914, 37.612586];
 const browserParams: LaunchOptions = {
@@ -14,22 +15,43 @@ const browserParams: LaunchOptions = {
   devtools: false,
   args: [`--window-size=1229,891`, `--window-position=281,182`],
 };
-const routes: RouteParams[] = [];
-let counter = 1;
+const routes: RouteWithID[] = [];
+
+class GlobalCounter {
+  private value: number = 1;
+  public get index() {
+    return this.value;
+  }
+  public increase(): void {
+    this.value++;
+  }
+}
+
+const globalCounter = new GlobalCounter();
 
 (async () => {
   const browser = await puppeteer.launch(browserParams);
   const departureCoordinates = await getDepartureCoordinates();
   console.log(`Departure points count: ${departureCoordinates.length}`);
   for (const [id, coordinates] of departureCoordinates) {
-    console.log(`[${counter}] Start new route #${id} from [${coordinates}]`);
+    console.log(`[${globalCounter.index}] Start new route #${id} from [${coordinates}]`);
     await new Promise(async resolve => {
       const page = await browser.newPage();
       await page.goto(getQueryParams(coordinates));
       await changeRouteDirection(page);
-      page.on("response", response => handleResponse(response, id, page, counter));
-      counter++;
-      page.on("close", () => resolve());
+      const timeoutID = setTimeout(async () => {
+        console.log(`[${globalCounter.index}] Time out #${id}`);
+        console.error(`[${globalCounter.index}] Time out #${id}`);
+        await saveFailedIDs(id, `Time out`);
+        globalCounter.increase();
+        await page.close();
+      }, 10000);
+      page.on("close", () => {
+        clearTimeout(timeoutID);
+        page.removeAllListeners();
+        resolve();
+      });
+      page.on("response", response => handleResponse(response, id, page));
     });
   }
   await promises.writeFile(path.join(__dirname, filePaths.routesCommon), JSON.stringify(routes, undefined, 4));
@@ -61,50 +83,58 @@ function getQueryParams([departureLat, departureLon]: [number, number]): string 
   );
 }
 
-async function handleResponse(
-  response: Response,
-  id: number,
-  page: puppeteer.Page,
-  index: number,
-): Promise<RouteParams | false> {
+async function handleResponse(response: Response, id: number, page: puppeteer.Page): Promise<Route | false> {
   const req = response.request();
   if (!req.url().includes("buildRoute?")) {
     return false;
   }
   try {
     const body = (await response.json()) as any;
-    const route = { ...body.data.routes[0], gridCellId: id };
+    const route = { ...(body.data.routes[0] as RawRoute), gridCellId: id };
     delete route.encodedCoordinates;
     delete route.paths;
     delete route.bounds;
     console.log(
       JSON.stringify(
         {
+          id: route.gridCellId,
           distance: route.distance.text,
-          duration: route.duration,
-          durationInTraffic: route.durationInTraffic,
-          difference: route.duration - route.durationInTraffic,
-          id,
+          durationWithoutTraffic: route.duration,
+          durationWithTraffic: route.durationInTraffic,
+          traffic: route.durationInTraffic - route.duration,
         },
         undefined,
         4,
       ),
     );
-    routes.push(route as RouteParams);
-    await saveRoutes(route as RouteParams);
-    console.log(`${index} Route #${id} saved to ${filePaths.routesPartials}`);
-    await page.close();
+    if (!isRouteValid(route)) {
+      console.log(`[${globalCounter.index}] Invalid Direction #${id}`);
+      console.error(`[${globalCounter.index}] Invalid Direction #${id}`);
+      await saveFailedIDs(id, `Invalid Direction`);
+    } else {
+      routes.push(route as RouteWithID);
+      await saveRoutes(route as RouteWithID);
+      console.log(`[${globalCounter.index}] Route #${id} saved to ${filePaths.routesPartials}`);
+    }
   } catch (e) {
-    console.error(`[${index}] Can\`t parse response from route #${id}\n`, e, `\n`);
+    console.log(`[${globalCounter.index}] Can\`t parse response from route #${id}\n`, e, `\n`);
+    console.error(`[${globalCounter.index}] Can\`t parse response from route #${id}\n`, e, `\n`);
+    await saveFailedIDs(id, `Failed to parse response`);
   }
+  globalCounter.increase();
+  await page.close();
 }
 
 async function changeRouteDirection(page: Page): Promise<void> {
   await page.click(".route-form-view__reverse-icon");
 }
 
-async function saveRoutes(route: RouteParams) {
+async function saveRoutes(route: RouteWithID): Promise<void> {
   await promises.appendFile(path.join(__dirname, filePaths.routesPartials), JSON.stringify(route, undefined, 4));
+}
+
+async function saveFailedIDs(id: number, message: string): Promise<void> {
+  await promises.appendFile(path.join(__dirname, filePaths.failedIDs), `${id} [${message}], \n`);
 }
 
 async function getDepartureCoordinates(): Promise<DepartureItem[]> {
@@ -113,5 +143,11 @@ async function getDepartureCoordinates(): Promise<DepartureItem[]> {
   ) as DepartureItem[];
 }
 
-export type RouteParams = { [key: string]: any; id: number };
+function isRouteValid(route: Route): boolean {
+  return (
+    route.refPointsLineCoordinates[1][0].toFixed(2) === moscowCenterLat.toFixed(2) &&
+    route.refPointsLineCoordinates[1][1].toFixed(2) === moscowCenterLon.toFixed(2)
+  );
+}
+
 export type DepartureItem = [number, [number, number]];
