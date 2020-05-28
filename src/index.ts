@@ -27,7 +27,6 @@ let counter = 1;
       const page = await browser.newPage();
       await page.goto(getQueryParams(coordinates));
       await changeRouteDirection(page);
-      await changeRouteDirection(page);
       page.on("response", response => handleResponse(response, id, page, counter));
       counter++;
       page.on("close", () => resolve());
@@ -49,13 +48,13 @@ function getQueryParams([departureLat, departureLon]: [number, number]): string 
     "&routes%5Bavoid%5D=tolls" +
     "&routes%5BtimeDependent%5D%5Btime%5D=2019-12-12T08%3A00%3A00" +
     "&rtext=" +
-    departureLon +
-    "%2C" +
-    departureLat +
-    "~" +
     moscowCenterLon +
     "%2C" +
     moscowCenterLat +
+    "~" +
+    departureLon +
+    "%2C" +
+    departureLat +
     "&rtn=1" +
     "&rtt=auto" +
     "&ruri=~&z=9"
